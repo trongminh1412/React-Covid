@@ -1,56 +1,87 @@
-import { useEffect, useState } from 'react';
-import { getCountries, getReportByCountry } from './components/apis';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { sortBy } from 'lodash';
 import CountrySelector from './components/CountrySelector';
-import Highlight from './components/Highlight';
+import { getCountries, getReportByCountry } from './components/apis';
 import Summary from './components/Summary';
+import Highlight from './components/Highlight';
+import { Container, Typography } from '@material-ui/core';
+import '@fontsource/roboto';
+import moment from 'moment';
+import 'moment/locale/vi';
 
-function App() {
+moment.locale('vi');
+
+const App = () => {
   const [countries, setCountries] = useState([]);
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [report, setReport] = useState([]);
 
   useEffect(() => {
     getCountries().then((res) => {
-      setCountries(res.data);
-
+      const { data } = res;
+      const countries = sortBy(data, 'Country');
+      setCountries(countries);
       setSelectedCountryId('vn');
     });
   }, []);
 
-  const handleOnChange = (e) => {
+  const handleOnChange = useCallback((e) => {
     setSelectedCountryId(e.target.value);
-  };
+  }, []);
 
   useEffect(() => {
     if (selectedCountryId) {
-      const { Slug } = countries.find(
-        (country) => country.ISO2.toLowerCase() === selectedCountryId
+      const selectedCountry = countries.find(
+        (country) => country.ISO2 === selectedCountryId.toUpperCase()
       );
-
-      //call api
-      getReportByCountry(Slug).then((res) => {
-        //xóa dữ liệu data cuối trong array res.data
+      getReportByCountry(selectedCountry.Slug).then((res) => {
+        console.log('getReportByCountry', { res });
+        // remove last item = current date
         res.data.pop();
         setReport(res.data);
       });
     }
-  }, [countries, selectedCountryId]);
+  }, [selectedCountryId, countries]);
+
+  const summary = useMemo(() => {
+    if (report && report.length) {
+      const latestData = report[report.length - 1];
+      return [
+        {
+          title: 'Số ca nhiễm',
+          count: latestData.Confirmed,
+          type: 'confirmed',
+        },
+        {
+          title: 'Khỏi',
+          count: latestData.Recovered,
+          type: 'recovered',
+        },
+        {
+          title: 'Tử vong',
+          count: latestData.Deaths,
+          type: 'death',
+        },
+      ];
+    }
+    return [];
+  }, [report]);
 
   return (
-    <>
+    <Container style={{ marginTop: 20 }}>
+      <Typography variant="h2" component="h2">
+        Số liệu COVID-19
+      </Typography>
+      <Typography>{moment().format('LLL')}</Typography>
       <CountrySelector
-        countries={countries}
         handleOnChange={handleOnChange}
+        countries={countries}
         value={selectedCountryId}
       />
-      <Highlight report={report} />
-      <Summary report={report} />
-    </>
+      <Highlight summary={summary} />
+      <Summary countryId={selectedCountryId} report={report} />
+    </Container>
   );
-}
+};
 
 export default App;
-
-/**
- * call api từ 1 functional component cần bọc trong useEffect
- */
