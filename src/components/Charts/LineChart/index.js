@@ -1,14 +1,11 @@
-import HighchartsReact from 'highcharts-react-official';
-import Highcharts from 'highcharts';
 import React, { useEffect, useState } from 'react';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 import moment from 'moment';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
+import { Button, ButtonGroup } from '@material-ui/core';
 
 const generateOptions = (data) => {
-  const categories = data?.map((item) =>
-    moment(item.Date).format('DD/MM/YYYY')
-  );
+  const categories = data.map((item) => moment(item.Date).format('DD/MM/YYYY'));
 
   return {
     chart: {
@@ -49,7 +46,7 @@ const generateOptions = (data) => {
     series: [
       {
         name: 'Tổng Ca nhiễm',
-        data: data?.map((item) => item.Confirmed),
+        data: data.map((item) => item.Confirmed),
       },
     ],
   };
@@ -58,16 +55,34 @@ const generateOptions = (data) => {
 export default function LineChart({ data }) {
   const [options, setOptions] = useState({});
   const [reportType, setReportType] = useState('all');
+  console.log({ data });
 
   useEffect(() => {
-    setOptions(generateOptions(data));
-  }, [data]);
+    let customData = [];
+    switch (reportType) {
+      case 'all':
+        customData = data;
+        break;
+      case '30':
+        customData = data.slice(Math.max(data.length - 30, 1));
+        break;
+      case '7':
+        customData = data.slice(Math.max(data.length - 7, 1));
+        break;
+
+      default:
+        customData = data;
+        break;
+    }
+
+    setOptions(generateOptions(customData));
+  }, [data, reportType]);
 
   return (
     <>
       <ButtonGroup
-        size="small"
-        aria-label="small outlined button group"
+        size='small'
+        aria-label='small outlined button group'
         style={{
           display: 'flex',
           justifyContent: 'flex-end',
