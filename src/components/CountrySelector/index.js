@@ -17,7 +17,7 @@ export default function CountrySelector({ countries, handleOnChange, value }) {
 
   return (
     <FormControl className={classes.formControl}>
-      <InputLabel shrink htmlFor='country-selector'>
+      <InputLabel shrink htmlFor="country-selector">
         Quốc Gia
       </InputLabel>
       <NativeSelect

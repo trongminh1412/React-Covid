@@ -55,7 +55,7 @@ const generateOptions = (data) => {
 export default function LineChart({ data }) {
   const [options, setOptions] = useState({});
   const [reportType, setReportType] = useState('all');
-  console.log({ data });
+  // console.log({ data });
 
   useEffect(() => {
     let customData = [];
@@ -81,8 +81,8 @@ export default function LineChart({ data }) {
   return (
     <>
       <ButtonGroup
-        size='small'
-        aria-label='small outlined button group'
+        size="small"
+        aria-label="small outlined button group"
         style={{
           display: 'flex',
           justifyContent: 'flex-end',
